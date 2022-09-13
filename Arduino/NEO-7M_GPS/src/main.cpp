@@ -1,6 +1,3 @@
-/*
- * main.cpp
- */
 #include "Arduino.h"
 #include <TinyGPS++.h>
 

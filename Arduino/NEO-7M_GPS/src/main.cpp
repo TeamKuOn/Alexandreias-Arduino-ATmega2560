@@ -1,28 +1,37 @@
 #include "Arduino.h"
+#include <Arduino_FreeRTOS.h>
 #include <TinyGPS++.h>
+#include "timers.h"
 
 static const uint32_t GPSBand = 9600;
 
-#define GPSSerial Serial1 // Tx1(18), Rx1(19)
+/* The TinyGPS++ object */
+#define gpsSerial Serial1 // Tx1(18), Rx1(19)
+
+// structure setting
+struct NEO7M_GPS {
+    char date[30] = "";
+    char time[30] = "";
+    char latitude[30] = "";
+    char longitude[30] = "";
+    char altitude[30] = "";
+    char hddp[30] = "";
+};
+
+// global variable
+NEO7M_GPS carPosition;
 
 void setup() {
     Serial.begin(115200);
-    GPSSerial.begin(GPSBand);
+    gpsSerial.begin(GPSBand);
 
     Serial.println("GPS test....");
+
+
 }
 
-// structure setting
-struct gpsNeo6mJson {
-    char Date[30];
-    char Time[30];
-    char Latitude[30];
-    char Longitude[30];
-    char Altitude[30];
-    char HDOP[30];
-};
+void loop() {}
 
-void loop() {
     while(GpsSerial.available() > 0) {
         if(neo6m.encode(GpsSerial.read())) {
             Serial.println(
@@ -51,4 +60,3 @@ void loop() {
             //      Serial.println("GPS signal is not Valid...");
         }
     }
-}

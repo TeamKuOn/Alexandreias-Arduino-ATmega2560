@@ -1,9 +1,9 @@
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
+#include "timers.h"
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
-#include "timers.h"
 
 /* DHT sensor Pin setting */
 #define DHT1PIN 2

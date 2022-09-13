@@ -6,8 +6,9 @@ TimerHandle_t xSec;
 
 // #define LED 13
 
-// void TaskA(void *pvParameters);
-// void TaskB(void *pvParameters);
+/* Prototype Decleration of function */
+void TaskA(void *pvParameters);
+void TaskB(void *pvParameters);
 
 // void TaskBlink(void *pvParameters);
 // void TaskChecker(void *pvParameters);
@@ -17,7 +18,6 @@ void xTimerCallback(TimerHandle_t xTime);
 // the setup function runs once when you press reset or power the board
 void setup() {
 
-    // initialize serial communication at 9600 bits per second:
     Serial.begin(115200);
 
     // while(!Serial) 
@@ -29,61 +29,45 @@ void setup() {
 
     xTimerStart(xSec, 0);
 
-    // Now set up two tasks to run independently.
-    // xTaskCreate(TaskA, "TaskA" // A name just for humans
-    //             ,
-    //             128 // This stack size can be checked & adjusted by reading the
-    //                 // Stack Highwater
-    //             ,
-    //             NULL, 2 // Priority, with 3 (configMAX_PRIORITIES - 1) being the
-    //                     // highest, and 0 being the lowest.
-    //             ,
-    //             NULL);
+    /*
+        Now set up two tasks to run independently.
 
-    // xTaskCreate(TaskB, "TaskB", 128 // Stack size
-    //             ,
-    //             NULL, 1 // Priority
-    //             ,
-    //             NULL);
+        xTaskCreate(Task function, 
+                    String with name of task, 
+                    Stack size in bytes, 
+                    Parameter passed as input of the task, 
+                    Priority of the task, 
+                    Task handle);
+    */
 
-    // xTaskCreate(
-    //   TaskBlink,
-    //   "Blink",
-    //   128,
-    //   NULL,
-    //   2,
-    //   NULL);
+    xTaskCreate(TaskA, "TaskA", 128, NULL, 2, NULL);
 
-    // xTaskCreate(
-    //   TaskChecker,
-    //   "Checker",
-    //   128,
-    //   NULL,
-    //   1,
-    //   NULL);
+    xTaskCreate(TaskB, "TaskB", 128, NULL, 1, NULL);
+
+    // xTaskCreate(TaskBlink, "Blink", 128, NULL, 2, NULL);
+
+    // xTaskCreate(TaskChecker, "Checker", 128, NULL, 1, NULL);
 }
 
-void loop() {
-    // Empty. Things are done in Tasks.
+void loop() {}
+
+void TaskA(void *pvParameters) { // This is a task.
+    (void)pvParameters;
+
+    for(;;) { // A Task shall never return or exit.
+        Serial.println('A');
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
+    }
 }
 
-// void TaskA(void *pvParameters) { // This is a task.
-//     (void)pvParameters;
+void TaskB(void *pvParameters) { // This is a task.
+    (void)pvParameters;
 
-//     for(;;) { // A Task shall never return or exit.
-//         Serial.println('A');
-//         vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
-//     }
-// }
-
-// void TaskB(void *pvParameters) { // This is a task.
-//     (void)pvParameters;
-
-//     for(;;) {
-//         Serial.println('B');
-//         vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
-//     }
-// }
+    for(;;) {
+        Serial.println('B');
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
+    }
+}
 
 // unsigned char led_state;
 

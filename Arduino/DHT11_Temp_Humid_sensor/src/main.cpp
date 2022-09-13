@@ -1,28 +1,34 @@
 /*
  * main.cpp
  */
+
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
 #include <Adafruit_Sensor.h>
-#include "DHT.h"
+#include <DHT.h>
+#include <DHT_U.h>
 #include "timers.h"
 
+/* DHT sensor Pin setting */
 #define DHT1PIN 2
 #define DHT2PIN 3
 #define DHTTYPE DHT11
 
+/* Timer interrupt setting */
 TimerHandle_t xSec;
 
 void xDHT11Callback(TimerHandle_t xTime);
+
+/* DHT sensor object */
+DHT_Unified dht1(DHT1PIN, DHTTYPE);
+DHT_Unified dht2(DHT2PIN, DHTTYPE);
+
+/* DHT11 sensor data structure definition */
 struct TEMP_HUMID {
-    float temp = 0;
+    sensors_event_t temp;
+    // float temp = 0;
     float humid = 0;
 };
-
-void xDHT11Callback(TimerHandle_t);
-
-DHT dht1(DHT1PIN, DHTTYPE);
-DHT dht2(DHT2PIN, DHTTYPE);
 
 TEMP_HUMID place1;
 TEMP_HUMID place2;
@@ -41,14 +47,21 @@ void setup() {
 void loop() {}
 
 void xDHT11Callback(TimerHandle_t xTime){
-    // place1 
-    place1.temp = dht1.readHumidity();
+    /* 
+        place1 
+    */
+    // place1.temp = dht1.temperature().getSensor(&sensor);
     // place1.humid = dht1.readTemperature();
+    // sensors_event_t event;
+    // place1.temp = dht1.temperature().getEvent(&event);
+    dht1.temperature().getEvent(&place1.temp);
 
-    // place2 
-    place2.temp = dht2.readHumidity();
+    /* 
+        place2 
+    */
+    // place2.temp = dht2.temperature().getSensor(&sensor);
     // place2.humid = dht2.readTemperature();
 
-    Serial.print("place1 temp: ");  Serial.println(place1.temp);
-    Serial.print("place2 temp: ");  Serial.println(place2.temp);
+    Serial.print("place1 temp: ");  Serial.println(place1.temp.temperature);
+    // Serial.print("place2 temp: ");  Serial.println(place2.temp);
 }

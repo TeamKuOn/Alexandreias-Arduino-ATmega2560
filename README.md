@@ -139,3 +139,38 @@ $ platformio run --target upload
 ```
 $ platformio device monitor
 ```
+
+### 4.5 Library
+ライブラリの設定は，platformio.ini に記述するか，コマンドラインで指定する．
+
+使用するライブラリがあれば，以下のコマンドで，ライブラリの名前を確認し，インストールする．
+```
+$ platformio lib search <library name>
+$ platformio lib install <library name>
+```
+
+例として，LiquidCrystal を使用する場合は，以下のコマンドで，ライブラリの名前を確認する．
+```
+$ platformio lib search FreeRTOS
+
+Found 73 packages (page 1 of 8)
+
+mincrmatt12/STM32Cube Middleware-FreeRTOS
+Library • 10.3.1+f4-1.26.1 • Published on Tue Apr 27 13:22:05 2021
+This library links in the version of FreeRTOS shipped with the STM32Cube framework. 
+
+ehubin/FreeRTOS-libopencm3
+Library • 10.2.0 • Published on Tue Jul  2 22:34:58 2019
+This is a packaged ...
+
+.....
+
+feilipu/FreeRTOS
+Library • 10.4.6-8 • Published on Sun Aug  7 13:08:33 2022
+<h3>FreeRTOS Real Time Operating System implemented for AVR (Uno, Nano, Leonardo, Mega).</h3>. The primary design goals are: Easy to use, Small footprint, Robust. Uses Watchdog Timer for 15ms resolution. Slow blink = stack overflow. Fast blink = heap malloc() failure.
+```
+
+ライブラリの名前を確認したら，以下のコマンドで，ライブラリをインストールする．
+```
+$ platformio lib install feilipu/FreeRTOS
+```

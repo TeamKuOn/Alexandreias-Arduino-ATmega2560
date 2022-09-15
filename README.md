@@ -158,7 +158,7 @@ WSL2 には，まだUSBのシリアルを直接扱う機能は無いため直接
 
 ##### デバイスをWindows側でアタッチ
 
-Arduino を接続後，以下のコマンドで BusID を確認する．
+Arduino を接続後，管理者権限で実行している Windows PowerShell にて以下のコマンドで BusID を確認する．
 ```
 PS C:\Users\wasou> usbipd wsl list
 BUSID  VID:PID    DEVICE                                                        STATE
@@ -194,6 +194,34 @@ BUSID  VID:PID    DEVICE                                                        
 
 ```
 PS C:\Users\wasou> usbipd wsl detach --busid 2-4
+```
+
+接続の確認は WSL 上でも以下のコマンドを実行する．
+
+アタッチ前
+```
+wasou@DESKTOP-R2V8MP0:~/Kuon/Alexandreias/Arduino/DHT11_Temp_Humid_sensor$ dmesg | grep tty
+[    0.049766] printk: console [tty0] enabled
+```
+
+アタッチ後
+```
+wasou@DESKTOP-R2V8MP0:~/Kuon/Alexandreias/Arduino/DHT11_Temp_Humid_sensor$ dmesg | grep tty
+[    0.049766] printk: console [tty0] enabled
+[  626.012936] cdc_acm 1-1:1.0: ttyACM0: USB ACM device
+```
+
+
+#### Permission Error
+
+以下のエラーが出た場合は，WSL 上にて以下のコマンドで，権限を変更する．
+
+```
+*** [upload] could not open port /dev/ttyACM0: [Errno 13] Permission denied: '/dev/ttyACM0'
+```
+
+```
+wasou@DESKTOP-R2V8MP0:~/Kuon/Alexandreias$ sudo chmod 666 /dev/ttyACM0
 ```
 
 

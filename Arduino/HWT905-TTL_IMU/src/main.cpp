@@ -2,7 +2,7 @@
 #include <Arduino_FreeRTOS.h>
 #include "timers.h"
 #include <Wire.h>
-#include <JY901.h>
+#include "JY901.h"
 
 struct IMU {
 	float accX = 0;

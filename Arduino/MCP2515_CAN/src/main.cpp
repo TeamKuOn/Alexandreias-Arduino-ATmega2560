@@ -1,16 +1,20 @@
+#include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
+#include "timers.h"
 #include <SPI.h>
 #include <mcp2515.h>
 
-#include "Arduino.h"
-#include "timers.h"
+/*
+        Task setting
+*/
+void TaskCANSend(void *pvParameters);
 
 /*
         Timer interrupt setting
 */
-TimerHandle_t xMSec;
+// TimerHandle_t xMSec;
 
-void xCANSendCallback(TimerHandle_t xTime);
+// void xCANSendCallback(TimerHandle_t xTime);
 
 /*
         CAN setting
@@ -22,13 +26,22 @@ struct can_frame canMsg1;
 MCP2515 mcp2515(chopSelect);
 
 void setup() {
-    Serial.begin(9600);
+    Serial.begin(115200);
     Serial.println("Starting up");
 
-    /* Timer Interrupt setting */
-    xMSec = xTimerCreate("CANSend", pdMS_TO_TICKS(100), pdTRUE, (void *)0, xCANSendCallback);
-    xTimerStart(xMSec, 0);
+    /* Task setting */
+    xTaskCreate(TaskCANSend, "CANSend", 128, NULL, 1, NULL);
 
+    /* Timer Interrupt setting */
+    // xMSec = xTimerCreate("CANSend", pdMS_TO_TICKS(100), pdTRUE, (void *)0, xCANSendCallback);
+    // xTimerStart(xMSec, 0);
+
+    Serial.println("Setup complete");
+}
+
+void loop() {}
+
+void TaskCANSend(void *pvParameters) {
     /* MCP2515 setting */
     mcp2515.reset();
     mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ);
@@ -45,9 +58,8 @@ void setup() {
     canMsg1.data[6] = 0xBE;
     canMsg1.data[7] = 0x86;
 	
-    Serial.println("Setup complete");
+    for (;;) {
+        mcp2515.sendMessage(&canMsg1);
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
 }
-
-void loop() {}
-
-void xCANSendCallback(TimerHandle_t xTime) { mcp2515.sendMessage(&canMsg1); }

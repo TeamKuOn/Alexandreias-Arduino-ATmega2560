@@ -1,11 +1,15 @@
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
-#include <TinyGPS++.h>
 #include "timers.h"
+#include <TinyGPS++.h>
 
 static const uint32_t GPSBand = 9600;
 
+/* Task Settings */
+void TaskCarPosition(void *pvParameters);
+
 /* The TinyGPS++ object */
+TinyGPSPlus gpsInfo;
 #define gpsSerial Serial1 // Tx1(18), Rx1(19)
 
 // structure setting
@@ -23,40 +27,32 @@ NEO7M_GPS carPosition;
 
 void setup() {
     Serial.begin(115200);
-    gpsSerial.begin(GPSBand);
+
+
+    xTaskCreate(TaskCarPosition, "TaskCarPosition", 1000, NULL, 1, NULL);
 
     Serial.println("GPS test....");
-
-
 }
 
 void loop() {}
 
-    while(GpsSerial.available() > 0) {
-        if(neo6m.encode(GpsSerial.read())) {
-            Serial.println(
-                "---------------------------------------------------");
-            // getSensorsData();
+void TaskCarPosition(void *pvParameters) {
+    gpsSerial.begin(GPSBand);
 
-            // Serial.print("Result: ");   Serial.println(GpsJson.Latitude);
-            // Serial.print("Result: ");   Serial.println(GpsJson.Altitude);
+    for(;;) {
 
-            Serial.println(neo6m.location.lat(), 8);
-            Serial.println(neo6m.location.lng(), 8);
-            Serial.println(neo6m.altitude.kilometers());
-            Serial.println(neo6m.hdop.value());
-            dataAsBytToChar(GpsJson.HDOP, "HDOP", neo6m.hdop.value(),
-                            neo6m.hdop.isValid()); // get HDOP
-            Serial.println(GpsJson.HDOP);
-            // GpsJson.Latitude = neo6m.location.lat();
-            // Serial.println(latitude);
-            // Serial.println(neo6m.location.lat(), 6);
-            // Serial.println(neo6m.location.isValid());
-            // Serial.println(neo6m.location.lat(), 6);
-            // Serial.println(neo6m.location.lng(), 6);
+        while(gpsSerial.available() > 0) {
+            if(gpsInfo.encode(gpsSerial.read())) {
+                Serial.println("---------------------------------------------------");
 
-            // delay(500);
-        } else {
-            //      Serial.println("GPS signal is not Valid...");
+                Serial.println(gpsInfo.location.lat(), 8);
+                Serial.println(gpsInfo.location.lng(), 8);
+                Serial.println(gpsInfo.altitude.kilometers());
+                Serial.println(gpsInfo.hdop.value());
+
+            } else {
+                // Serial.println("GPS signal is not Valid...");
+            }
         }
     }
+}

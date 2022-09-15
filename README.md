@@ -10,6 +10,8 @@
 
 このリポジトリには，動作するプログラムのみpushすることを許可する．
 
+---
+
 ## 2.Directory 
 
 ディレクトリ構造を以下に示す．
@@ -19,6 +21,7 @@
 └── Raspberry-pi
 ```
 
+---
 ## 3.Branch
 必ず"develop"ブランチから各自の名前の名前のブランチを作成し（```$ git branch```），管理する．
 ブランチ名は利用者が容易に特定できるものであれば，本名でもニックネームでも何でも良い．
@@ -31,6 +34,8 @@ user@MacBook:~/workspace/software-parts$ git branch
   develop
 * wasou 
 ```
+
+---
 
 ## 4. About PlatformIO
 PlatformIO は，マイコンの開発環境を構築するためのツールである．
@@ -139,6 +144,58 @@ $ platformio run --target upload
 ```
 $ platformio device monitor
 ```
+
+#### 4.4.1 Upload on WSL2
+
+WSL 上で PlatformIO を使用する場合は，usbipd-win を利用することで Windows を経由してマイコンに書き込むことができる．
+
+WSL2 には，まだUSBのシリアルを直接扱う機能は無いため直接書き込むことはできないが，Windows を介してアクセスする方法が提供されている．
+##### Install usbipd-win
+以下のリポジトリからファイルをダウンロードし， usbipd-win をインストールする．
+
+<a href="https://github.com/dorssel/usbipd-win/releases">dorssel / usbipd-win</a>
+
+
+##### デバイスをWindows側でアタッチ
+
+Arduino を接続後，以下のコマンドで BusID を確認する．
+```
+PS C:\Users\wasou> usbipd wsl list
+BUSID  VID:PID    DEVICE                                                        STATE
+2-1    062a:4106  USB Input Device                                              Not attached
+2-2    056e:1058  USB Input Device                                              Not attached
+2-4    2341:0042  Arduino Mega 2560 (COM6)                                      Not attached
+2-11   048d:6006  USB Input Device                                              Not attached
+2-13   04f2:b71a  HD Webcam, IR Camera                                          Not attached
+2-14   8087:0026  インテル(R) ワイヤレス Bluetooth(R)                           Not attached
+```
+
+今回は BusID は ```2-4``` なので，以下のコマンドでアタッチする．
+
+```
+PS C:\Users\wasou> usbipd wsl attach --busid 2-4
+usbipd: info: Using default distribution 'Ubuntu'.
+```
+
+アタッチが成功すると，以下のように表示される．
+
+```
+PS C:\Users\wasou> usbipd wsl list
+BUSID  VID:PID    DEVICE                                                        STATE
+2-1    062a:4106  USB Input Device                                              Not attached
+2-2    056e:1058  USB Input Device                                              Not attached
+2-4    2341:0042  Arduino Mega 2560 (COM6)                                      Attached - Ubuntu
+2-11   048d:6006  USB Input Device                                              Not attached
+2-13   04f2:b71a  HD Webcam, IR Camera                                          Not attached
+2-14   8087:0026  インテル(R) ワイヤレス Bluetooth(R)                            Not attached
+```
+
+デタッチする場合は，以下のコマンドを実行する．
+
+```
+PS C:\Users\wasou> usbipd wsl detach --busid 2-4
+```
+
 
 ### 4.5 Library
 ライブラリの設定は，platformio.ini に記述するか，コマンドラインで指定する．

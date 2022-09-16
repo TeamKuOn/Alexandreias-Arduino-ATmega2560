@@ -7,8 +7,8 @@
 /*
         Task setting
 */
-// void TaskCANSend(void *pvParameters);
-void TaskCANReceive(void *pvParameters);
+void TaskCANSend(void *pvParameters);
+// void TaskCANReceive(void *pvParameters);
 
 /*
         Timer interrupt setting
@@ -20,23 +20,27 @@ void TaskCANReceive(void *pvParameters);
 /*
         CAN setting
 */
-#define chopSelect 10
+#define chipSelect 53
 
 struct can_frame canMsg1;
 
-MCP2515 mcp2515(chopSelect);
+MCP2515 mcp2515(chipSelect);
 
 void setup() {
     Serial.begin(115200);
     Serial.println("Starting up");
 
     /* Task setting */
-    // xTaskCreate(TaskCANSend, "CANSend", 128, NULL, 1, NULL);
-    xTaskCreate(TaskCANReceive, "CANSend", 128, NULL, 1, NULL);
+    xTaskCreate(TaskCANSend, "CANSend", 128, NULL, 1, NULL);
+    // xTaskCreate(TaskCANReceive, "CANSend", 128, NULL, 1, NULL);
 
     /* Timer Interrupt setting */
     // xMSec = xTimerCreate("CANSend", pdMS_TO_TICKS(100), pdTRUE, (void *)0,
     // xCANSendCallback); xTimerStart(xMSec, 0);
+
+    mcp2515.reset();
+    mcp2515.setBitrate(CAN_125KBPS);
+    mcp2515.setNormalMode();
 
     Serial.println("Setup complete");
 }
@@ -45,9 +49,6 @@ void loop() {}
 
 void TaskCANSend(void *pvParameters) {
     /* MCP2515 setting */
-    mcp2515.reset();
-    mcp2515.setBitrate(CAN_500KBPS, MCP_8MHZ);
-    mcp2515.setNormalMode();
 
     canMsg1.can_id = 0x0F6;
     canMsg1.can_dlc = 8;
@@ -68,9 +69,6 @@ void TaskCANSend(void *pvParameters) {
 }
 
 void TaskCANReceive(void *pvParameters) {
-    mcp2515.reset();
-    mcp2515.setBitrate(CAN_125KBPS);
-    mcp2515.setNormalMode();
 
     for(;;) {
         if(mcp2515.readMessage(&canMsg1) == MCP2515::ERROR_OK) {

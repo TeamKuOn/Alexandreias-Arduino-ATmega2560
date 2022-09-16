@@ -8,8 +8,12 @@ SemaphoreHandle_t xSerialSemaphore;
 void TaskDigitalRead(void *pvParameters);
 void TaskAnalogRead(void *pvParameters);
 
-void void setup() { 
+void setup() { 
 	Serial.begin(115200); 
+
+	if ((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+            xSemaphoreGive((xSerialSemaphore));
+        }
 
 	xTaskCreate(TaskDigitalRead, "DigitalRead", 128, NULL, 1, NULL);
 
@@ -19,19 +23,31 @@ void void setup() {
 void loop() {}
 
 void TaskDigitalRead(void *pvParameters) {
-	pinMode(13, OUTPUT);
+	uint8_t pushButton = 2;
+	pinMode(pushButton, INPUT);
+
 	for (;;) {
-		digitalWrite(13, HIGH);
-		vTaskDelay(1000);
-		digitalWrite(13, LOW);
-		vTaskDelay(1000);
+		int buttonState = digitalRead(pushButton);
+
+		if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE ) {
+			Serial.print("DigitalRead: ");
+			Serial.println(buttonState);
+			xSemaphoreGive( xSerialSemaphore );
+		}
+
+		vTaskDelay(1);
 	}
 }
 
 void TaskAnalogRead(void *pvParameters) {
 	for (;;) {
 		int sensorValue = analogRead(A0);
-		Serial.println(sensorValue);
+
+		if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE ) {
+			Serial.print("AnalogRead: ");
+			xSemaphoreGive( xSerialSemaphore );
+		}
+
 		vTaskDelay(1000);
 	}
 }

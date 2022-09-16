@@ -45,6 +45,7 @@ void TaskAnalogRead(void *pvParameters) {
 
 		if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE ) {
 			Serial.print("AnalogRead: ");
+			Serial.println(sensorValue);
 			xSemaphoreGive( xSerialSemaphore );
 		}
 

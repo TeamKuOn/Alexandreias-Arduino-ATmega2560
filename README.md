@@ -155,6 +155,15 @@ WSL2 には，まだUSBのシリアルを直接扱う機能は無いため直接
 
 <a href="https://github.com/dorssel/usbipd-win/releases">dorssel / usbipd-win</a>
 
+##### Linux に USBIP ツールとハードウェア データベースをインストールする
+USB/IP プロジェクトのインストールが完了したら、ユーザー空間ツールと USB ハードウェア識別子のデータベースをインストールする必要があります。
+
+```
+sudo apt install linux-tools-5.4.0-77-generic hwdata
+sudo update-alternatives --install /usr/local/bin/usbip usbip /usr/lib/linux-tools/5.4.0-77-generic/usbip 20
+```
+
+この時点で、USB デバイスを共有するために Windows でサービスが実行され、共有デバイスに接続するために必要なツールが WSL にインストールされます。
 
 ##### デバイスをWindows側でアタッチ
 

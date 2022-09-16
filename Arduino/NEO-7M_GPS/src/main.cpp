@@ -1,7 +1,10 @@
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
+#include <semphr.h>
 #include "timers.h"
 #include <TinyGPS++.h>
+
+SemaphoreHandle_t xSerialSemaphore;
 
 static const uint32_t GPSBand = 9600;
 
@@ -28,6 +31,9 @@ NEO7M_GPS carPosition;
 void setup() {
     Serial.begin(115200);
 
+    if ((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+        xSemaphoreGive((xSerialSemaphore));
+    }
 
     xTaskCreate(TaskCarPosition, "TaskCarPosition", 1000, NULL, 1, NULL);
 
@@ -41,18 +47,25 @@ void TaskCarPosition(void *pvParameters) {
 
     for(;;) {
 
-        while(gpsSerial.available() > 0) {
-            if(gpsInfo.encode(gpsSerial.read())) {
-                Serial.println("---------------------------------------------------");
+		if (xSemaphoreTake(xSerialSemaphore, (TickType_t) 10) == pdTRUE) {
 
-                Serial.println(gpsInfo.location.lat(), 8);
-                Serial.println(gpsInfo.location.lng(), 8);
-                Serial.println(gpsInfo.altitude.kilometers());
-                Serial.println(gpsInfo.hdop.value());
+            while(gpsSerial.available() > 0) {
+                Serial.println("GPS signal is Valid...");
 
-            } else {
-                // Serial.println("GPS signal is not Valid...");
+                if(gpsInfo.encode(gpsSerial.read())) {
+                    Serial.println("---------------------------------------------------");
+
+                    Serial.println(gpsInfo.location.lat(), 8);
+                    Serial.println(gpsInfo.location.lng(), 8);
+                    Serial.println(gpsInfo.altitude.kilometers());
+                    Serial.println(gpsInfo.hdop.value());
+
+                } else {
+                    // Serial.println("GPS signal is not Valid...");
+                }
             }
+
+            xSemaphoreGive(xSerialSemaphore);
         }
     }
 }

@@ -1,8 +1,8 @@
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>
-#include "timers.h"
 #include "JY901.h"
+#include "timers.h"
 #include <Wire.h>
 
 SemaphoreHandle_t xSerialSemaphore;
@@ -11,7 +11,7 @@ SemaphoreHandle_t xSerialSemaphore;
 void TaskIMU(void *pvParameters);
 
 /* HWT905-TTL settings */
-#define imuSerial Serial1 // Rx(green) -> Tx2(16), Tx(yellow) -> Rx2(17)
+#define imuSerial Serial1 // Rx(green) -> Tx2(18), Tx(yellow) -> Rx1(19)
 
 struct IMU {
     float accX = 0;
@@ -24,8 +24,8 @@ IMU carAcc;
 void setup() {
     Serial.begin(115200);
 
-    if ( (xSerialSemaphore = xSemaphoreCreateMutex()) != NULL ) {  
-        xSemaphoreGive( ( xSerialSemaphore ) );  
+    if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+        xSemaphoreGive((xSerialSemaphore));
     }
 
     xTaskCreate(TaskIMU, "TaskIMU", 128, NULL, 1, NULL);
@@ -37,27 +37,26 @@ void TaskIMU(void *pvParameters) {
     imuSerial.begin(115200);
 
     for(;;) {
-        if (xSemaphoreTake(xSerialSemaphore, (TickType_t) 10) == pdTRUE) {
+        if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
             while(imuSerial.available()) {
                 JY901.CopeSerialData(imuSerial.read());
             }
-
-            carAcc.accX = (float)JY901.stcAcc.a[0] / 32768 * 16;
-            carAcc.accY = (float)JY901.stcAcc.a[1] / 32768 * 16;
-            carAcc.accZ = (float)JY901.stcAcc.a[2] / 32768 * 16;
-
-            Serial.print("Acc:");
-            Serial.print(carAcc.accX);
-            Serial.print(" ");
-            Serial.print(carAcc.accY);
-            Serial.print(" ");
-            Serial.println(carAcc.accZ);
-
-            xSemaphoreGive(xSerialSemaphore);
         }
 
-        vTaskDelay(1);
+        carAcc.accX = (float)JY901.stcAcc.a[0] / 32768 * 16;
+        carAcc.accY = (float)JY901.stcAcc.a[1] / 32768 * 16;
+        carAcc.accZ = (float)JY901.stcAcc.a[2] / 32768 * 16;
 
+        Serial.print("Acc:");
+        Serial.print(carAcc.accX);
+        Serial.print(" ");
+        Serial.print(carAcc.accY);
+        Serial.print(" ");
+        Serial.println(carAcc.accZ);
+
+        xSemaphoreGive(xSerialSemaphore);
+
+        vTaskDelay(1);
 
         // Serial.print("Time:20");
         // Serial.print(JY901.stcTime.ucYear);
@@ -70,7 +69,8 @@ void TaskIMU(void *pvParameters) {
         // Serial.print(":");
         // Serial.print(JY901.stcTime.ucMinute);
         // Serial.print(":");
-        // Serial.println((float)JY901.stcTime.ucSecond + (float)JY901.stcTime.usMiliSecond / 1000);
+        // Serial.println((float)JY901.stcTime.ucSecond +
+        // (float)JY901.stcTime.usMiliSecond / 1000);
 
         // Serial.print("Acc:");
         // Serial.print((float)JY901.stcAcc.a[0] / 32768 * 16);

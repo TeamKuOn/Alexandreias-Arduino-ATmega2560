@@ -47,7 +47,11 @@ void setup() {
 void loop() {}
 
 void TaskINA226(void *pvParameters) {
-    voltCurrMeter.readMV(&batteryUnit.voltage);
-    voltCurrMeter.readMA(&batteryUnit.current);
-    voltCurrMeter.readMW(&batteryUnit.power);
+    for (;;) {
+        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            voltCurrMeter.readMV(&batteryUnit.voltage);
+            voltCurrMeter.readMA(&batteryUnit.current);
+            voltCurrMeter.readMW(&batteryUnit.power);
+        }
+    }
 }

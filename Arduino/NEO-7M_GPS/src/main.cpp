@@ -1,19 +1,24 @@
+/* Main library */
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
-#include <semphr.h>
 #include "timers.h"
+#include <semphr.h>
+
+/* Sensor library */
 #include <TinyGPS++.h>
 
 SemaphoreHandle_t xSerialSemaphore;
+SemaphoreHandle_t xInterruptSemaphore;
 
-static const uint32_t GPSBand = 9600;
+static const uint32_t GPSBaud = 9600;
 
 /* Task Settings */
 void TaskCarPosition(void *pvParameters);
 
+void interruptHandler();
 /* The TinyGPS++ object */
 TinyGPSPlus gpsInfo;
-#define gpsSerial Serial1 // Tx1(18), Rx1(19)
+#define gpsSerial Serial2 // Rx -> Tx2(16), Tx -> Rx2(17)
 
 // structure setting
 struct NEO7M_GPS {
@@ -26,14 +31,20 @@ struct NEO7M_GPS {
 };
 
 // global variable
-NEO7M_GPS carPosition;
+struct NEO7M_GPS carPosition;
 
 void setup() {
     Serial.begin(115200);
 
-    if ((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+    pinMode(2, INPUT_PULLUP);
+
+    if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
         xSemaphoreGive((xSerialSemaphore));
     }
+
+    // if((xInterruptSemaphore = xSemaphoreCreateBinary()) != NULL) {
+    //     attachInterrupt(digitalPinToInterrupt(2), interruptHandler, FALLING);
+    // }
 
     xTaskCreate(TaskCarPosition, "TaskCarPosition", 1000, NULL, 1, NULL);
 
@@ -42,30 +53,32 @@ void setup() {
 
 void loop() {}
 
+void interruptHandler() { xSemaphoreGiveFromISR(xInterruptSemaphore, NULL); }
+
 void TaskCarPosition(void *pvParameters) {
-    gpsSerial.begin(GPSBand);
+    gpsSerial.begin(GPSBaud);
 
     for(;;) {
 
-		if (xSemaphoreTake(xSerialSemaphore, (TickType_t) 10) == pdTRUE) {
-
-            while(gpsSerial.available() > 0) {
-                Serial.println("GPS signal is Valid...");
-
-                if(gpsInfo.encode(gpsSerial.read())) {
-                    Serial.println("---------------------------------------------------");
-
-                    Serial.println(gpsInfo.location.lat(), 8);
-                    Serial.println(gpsInfo.location.lng(), 8);
-                    Serial.println(gpsInfo.altitude.kilometers());
-                    Serial.println(gpsInfo.hdop.value());
-
-                } else {
-                    // Serial.println("GPS signal is not Valid...");
+        // if(xSemaphoreTake(xInterruptSemaphore, (TickType_t)10) == pdTRUE) {
+            if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+                while(gpsSerial.available() > 0) {
+                    gpsInfo.encode(gpsSerial.read());
                 }
+                xSemaphoreGive(xSerialSemaphore);
             }
+        // }
 
-            xSemaphoreGive(xSerialSemaphore);
-        }
+
+        Serial.println("---------------------------------------------------");
+
+        Serial.println(gpsInfo.location.lat(), 8);
+        Serial.println(gpsInfo.location.lng(), 8);
+        Serial.println(gpsInfo.altitude.kilometers());
+        Serial.println(gpsInfo.hdop.value());
+
+
+
+        vTaskDelay(1);
     }
 }

@@ -52,6 +52,10 @@ void TaskINA226(void *pvParameters) {
             voltCurrMeter.readMV(&batteryUnit.voltage);
             voltCurrMeter.readMA(&batteryUnit.current);
             voltCurrMeter.readMW(&batteryUnit.power);
+
+			xSemaphoreGive(xSerialSemaphore);
         }
+
+        vTaskDelay(1);
     }
 }

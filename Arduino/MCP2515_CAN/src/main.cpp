@@ -12,6 +12,8 @@
 
 SemaphoreHandle_t xSerialSemaphore;
 
+typedef unsigned char ___u64Byte;
+
 /* Task setting */
 void TaskCANSend(void *pvParameters);
 // void TaskCANReceive(void *pvParameters);
@@ -47,19 +49,24 @@ void setup() {
 
 void loop() {}
 
+void double2Bytes(double double_variable, ___u64Byte  bytes_temp[8]) {
+    union {
+        double d;
+        ___u64Byte bytes[8];
+    } thing;
+    thing.d = double_variable;
+    memcpy(bytes_temp, thing.bytes, 8);
+}
+
+
 void TaskCANSend(void *pvParameters) {
     /* MCP2515 setting */
 
     canMsg1.can_id = 0x0F6;
     canMsg1.can_dlc = 8;
-    canMsg1.data[0] = 0x8E;
-    canMsg1.data[1] = 0x87;
-    canMsg1.data[2] = 0x32;
-    canMsg1.data[3] = 0xFA;
-    canMsg1.data[4] = 0x26;
-    canMsg1.data[5] = 0x8E;
-    canMsg1.data[6] = 0xBE;
-    canMsg1.data[7] = 0x86;
+
+    double data = 135.355414;
+    double2Bytes(data, canMsg1.data);
 
     for(;;) {
         Serial.println("Sending CAN message...");

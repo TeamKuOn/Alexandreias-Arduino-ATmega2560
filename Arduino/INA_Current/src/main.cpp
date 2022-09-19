@@ -1,42 +1,61 @@
-#include "Arduino.h"
+/* Main Library*/
 #include <Arduino_FreeRTOS.h>
+#include <semphr.h>
+
+#include "Arduino.h"
 #include "timers.h"
+
+/* Communicatoin Library*/
+#include <Wire.h>
+
+/* Device Library*/
 #include <INA226_asukiaaa.h>
 
-/*
-        Timer interrupt setting
-*/
-TimerHandle_t xMSec;
+SemaphoreHandle_t xSerialSemaphore;
 
-void xINA226Callback(TimerHandle_t xTime);
+/* Task setting */
+void TaskINA226(void *pvParameters);
 
-/*
-        INA226 setting
-*/
-const uint16_t ina226calib = INA226_asukiaaa::calcCalibByResistorMilliOhm(2); // Max 5120 milli ohm
-// const uint16_t ina226calib = INA226_asukiaaa::calcCalibByResistorMicroOhm(2000);
+/* INA226 setting */
+const uint16_t ina226calib =
+    INA226_asukiaaa::calcCalibByResistorMilliOhm(2);  // Max 5120 milli ohm
+
+// const uint16_t ina226calib =
+// INA226_asukiaaa::calcCalibByResistorMicroOhm(2000);
+
+/* Class init */
 INA226_asukiaaa voltCurrMeter(INA226_ASUKIAAA_ADDR_A0_GND_A1_GND, ina226calib);
 
 struct INA226Data {
-		int16_t voltage = 0;
-		int16_t current = 0;
-		int16_t power   = 0;
+    int16_t voltage = 0;
+    int16_t current = 0;
+    int16_t power = 0;
 };
 
 INA226Data batteryUnit;
 
 void setup() {
-	Serial.begin(115200);
+    Serial.begin(115200);
 
-	xMSec = xTimerCreate("xMSec", pdMS_TO_TICKS(1000), pdTRUE, (void *)0, xINA226Callback);
-	xTimerStart(xMSec, 0);
+    if ((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+        xSemaphoreGive((xSerialSemaphore));
+    }
+
+    xTaskCreate(TaskINA226, "TaskINA226", 128, NULL, 1, NULL);
 }
 
 void loop() {}
 
+void TaskINA226(void *pvParameters) {
+    for (;;) {
+        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            voltCurrMeter.readMV(&batteryUnit.voltage);
+            voltCurrMeter.readMA(&batteryUnit.current);
+            voltCurrMeter.readMW(&batteryUnit.power);
 
-void xINA226Callback(TimerHandle_t xTime){
-    voltCurrMeter.readMV(&batteryUnit.voltage);
-    voltCurrMeter.readMA(&batteryUnit.current);
-    voltCurrMeter.readMW(&batteryUnit.power);
+			xSemaphoreGive(xSerialSemaphore);
+        }
+
+        vTaskDelay(1);
+    }
 }

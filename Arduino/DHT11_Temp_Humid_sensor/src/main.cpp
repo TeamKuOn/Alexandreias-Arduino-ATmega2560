@@ -1,126 +1,71 @@
-// #include "Arduino.h"
-// #include <Arduino_FreeRTOS.h>
-// #include "timers.h"
-// #include <Adafruit_Sensor.h>
-// #include <DHT.h>
-// #include <DHT_U.h>
-// // #include <semphr.h>
+/* Main library */
+#include "Arduino.h"
+#include <Arduino_FreeRTOS.h>
+#include "timers.h"
+#include <semphr.h>
 
-// /* DHT sensor Pin setting */
-// #define DHT1PIN 2
-// #define DHT2PIN 3
-// #define DHTTYPE DHT11
+/* Communication library */
+#include <SPI.h>
 
-// /* DHT Task */
-// void TaskDHT11(void *pvParameters);
+/* Sensor & Device library */
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
 
-// /* Timer interrupt setting */
-// // TimerHandle_t xSec;
+/* DHT sensor Pin setting */
+#define DHT1PIN 2
+#define DHT2PIN 3
+#define DHTTYPE DHT11
 
-// // void xDHT11Callback(TimerHandle_t xTime);
+/* DHT Task */
+void TaskDHT11(void *pvParameters);
 
-// /* DHT sensor object */
-// DHT dht1(DHT1PIN, DHTTYPE);
-// // DHT_Unified dht1(DHT1PIN, DHTTYPE);
-// // DHT_Unified dht2(DHT2PIN, DHTTYPE);
+SemaphoreHandle_t xSerialSemaphore;
 
-// /* DHT11 sensor data structure definition */
-// struct TEMP_HUMID {
-//     sensors_event_t temp;
-//     // float temp = 0;
-//     // float humid = 0;
-// };
+/* DHT sensor object */
+DHT dht1(DHT1PIN, DHTTYPE);
+// DHT_Unified dht1(DHT1PIN, DHTTYPE);
+// DHT_Unified dht2(DHT2PIN, DHTTYPE);
 
-// TEMP_HUMID place1;
-// // TEMP_HUMID place2;
+/* DHT11 sensor data structure definition */
+struct TEMP_HUMID {
+    sensors_event_t temp;
+    // sensors_event_t humd;
+};
 
-// void setup() {
-//     Serial.begin(115200);
-//     Serial.println(F("Arduino is rebooted!"));
+TEMP_HUMID place1;
+// TEMP_HUMID place2;
 
-//     dht1.begin();
-//     // dht2.begin();
-//     float t = dht1.readTemperature();
+void setup() {
+    Serial.begin(115200);
+    Serial.println(F("Arduino is rebooted!"));
 
-//     // Task Creating
-//     xTaskCreate(TaskDHT11, /* Task function. */
-//                 "DHT11",   /* String with name of task. */
-//                 128,       /* Stack size in bytes. */
-//                 NULL,      /* Parameter passed as input of the task */
-//                 1,         /* Priority of the task. */
-//                 NULL);     /* Task handle. */
+    dht1.begin();
+    // dht2.begin();
 
-//     // sensor_t sensor;
-//     // dht1.temperature().getSensor(&sensor);
-//     // Serial.println(F("------------------------------------"));
-//     // Serial.println(F("Temperature Sensor"));
-//     // Serial.print(F("Sensor Type: "));
-//     // Serial.println(sensor.name);
-//     // Serial.print(F("Driver Ver:  "));
-//     // Serial.println(sensor.version);
-//     // Serial.print(F("Unique ID:   "));
-//     // Serial.println(sensor.sensor_id);
-//     // Serial.print(F("Max Value:   "));
-//     // Serial.print(sensor.max_value);
-//     // Serial.println(F("°C"));
-//     // Serial.print(F("Min Value:   "));
-//     // Serial.print(sensor.min_value);
-//     // Serial.println(F("°C"));
-//     // Serial.print(F("Resolution:  "));
-//     // Serial.print(sensor.resolution);
-//     // Serial.println(F("°C"));
+    if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+        xSemaphoreGive((xSerialSemaphore));
+    }
 
-//     // Timer Creating
-//     // xSec = xTimerCreate("DHT11", pdMS_TO_TICKS(1000), pdTRUE, (void *)0,
-//     // xDHT11Callback); xTimerStart(xSec, 0);
-// }
+    // Task Creating
+    xTaskCreate(TaskDHT11, "DHT11", 128, NULL, 1, NULL);
+}
 
-// void loop() {}
+void loop() {}
 
-// void TaskDHT11(void *pvParameters __attribute__((unused)) ) {
-//     (void)pvParameters;
+void TaskDHT11(void *pvParameters __attribute__((unused))) {
+    (void)pvParameters;
 
-//     // float templeture;
+    dht1.begin();
 
-//     dht1.begin();
+    for(;;) {
+        Serial.print("sensing temp...");
 
-//     for(;;) {
-//         Serial.print("sensing temp...");
-        
-//         // Serial.println(dht1.read());
-//         sensors_event_t event;
-//         dht1.temperature().getEvent(&event);
-//         // templeture = dht1.readTemperature();
-//         Serial.print("place1 temp: ");
-//         // Serial.println(place1.temp.temperature);
-//         Serial.println(event.temperature);
-//         // Serial.println(templeture);
+        if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            Serial.println(place1.temp.temperature);
+            xSemaphoreGive(xSerialSemaphore);
+        }
 
-//         vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
-//     }
-// }
-
-// // void xDHT11Callback(TimerHandle_t xTime){
-// /*
-//     place1
-// */
-// // place1.temp = dht1.temperature().getSensor(&sensor);
-// // place1.humid = dht1.readTemperature();
-// // sensors_event_t event;
-// // place1.temp = dht1.temperature().getEvent(&event);
-// // dht1.temperature().getEvent(&place1.temp);
-
-// /*
-//     place2
-// */
-// // place2.temp = dht2.temperature().getSensor(&sensor);
-// // place2.humid = dht2.readTemperature();
-
-// // Serial.print("place1 temp: ");  Serial.println(place1.temp.temperature);
-// // Serial.print("place2 temp: ");  Serial.println(place2.temp);
-// // }
-
-
-
-
-
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // wait for one second
+    }
+}

@@ -1,14 +1,16 @@
 /* Main library */
-#include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
-#include "timers.h"
 #include <semphr.h>
+
+#include "Arduino.h"
+#include "timers.h"
 
 /* Sensor library */
 #include <TinyGPS++.h>
 
 SemaphoreHandle_t xSerialSemaphore;
 SemaphoreHandle_t xInterruptSemaphore;
+SemaphoreHandle_t xVariableSemaphore;
 
 static const uint32_t GPSBaud = 9600;
 
@@ -18,16 +20,27 @@ void TaskCarPosition(void *pvParameters);
 void interruptHandler();
 /* The TinyGPS++ object */
 TinyGPSPlus gpsInfo;
-#define gpsSerial Serial2 // Rx -> Tx2(16), Tx -> Rx2(17)
+#define gpsSerial Serial2  // Rx -> Tx2(16), Tx -> Rx2(17)
 
 // structure setting
 struct NEO7M_GPS {
-    char date[30] = "";
-    char time[30] = "";
-    char latitude[30] = "";
-    char longitude[30] = "";
-    char altitude[30] = "";
-    char hddp[30] = "";
+    // Date
+    uint32_t year = 0;
+    uint8_t month = 0;
+    uint8_t day = 0;
+
+    // Time
+    uint8_t hour = 0;
+    uint8_t minute = 0;
+    uint8_t second = 0;
+
+    // GPS position
+    double lat = 0;
+    double lng = 0;
+    double altMeters = 0;
+
+    // GPS hrizontal dilution of precision
+    double hdop = 0;
 };
 
 // global variable
@@ -38,7 +51,7 @@ void setup() {
 
     pinMode(2, INPUT_PULLUP);
 
-    if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+    if ((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
         xSemaphoreGive((xSerialSemaphore));
     }
 
@@ -58,26 +71,47 @@ void interruptHandler() { xSemaphoreGiveFromISR(xInterruptSemaphore, NULL); }
 void TaskCarPosition(void *pvParameters) {
     gpsSerial.begin(GPSBaud);
 
-    for(;;) {
-
+    for (;;) {
         // if(xSemaphoreTake(xInterruptSemaphore, (TickType_t)10) == pdTRUE) {
-            if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
-                while(gpsSerial.available() > 0) {
-                    gpsInfo.encode(gpsSerial.read());
-                }
-                xSemaphoreGive(xSerialSemaphore);
+        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            while (gpsSerial.available() > 0) {
+                gpsInfo.encode(gpsSerial.read());
             }
+            xSemaphoreGive(xSerialSemaphore);
+        }
         // }
-
 
         Serial.println("---------------------------------------------------");
 
-        Serial.println(gpsInfo.location.lat(), 8);
-        Serial.println(gpsInfo.location.lng(), 8);
-        Serial.println(gpsInfo.altitude.kilometers());
-        Serial.println(gpsInfo.hdop.value());
+        if (xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            carPosition.year = gpsInfo.date.year();
+            carPosition.month = gpsInfo.date.month();
+            carPosition.day = gpsInfo.date.day();
 
+            carPosition.hour = gpsInfo.time.hour();
+            carPosition.minute = gpsInfo.time.minute();
+            carPosition.second = gpsInfo.time.second();
 
+            carPosition.lat = gpsInfo.location.lat();
+            carPosition.lng = gpsInfo.location.lng();
+            carPosition.altMeters = gpsInfo.altitude.meters();
+            carPosition.hdop = gpsInfo.hdop.value();
+
+            xSemaphoreGive(xSerialSemaphore);
+        }
+        
+        Serial.println(carPosition.year);
+        Serial.println(carPosition.month);
+        Serial.println(carPosition.day);
+
+        Serial.println(carPosition.hour);
+        Serial.println(carPosition.minute);
+        Serial.println(carPosition.second);
+
+        Serial.println(carPosition.lat, 8);
+        Serial.println(carPosition.lng, 8);
+        Serial.println(carPosition.altMeters);
+        Serial.println(carPosition.hdop);
 
         vTaskDelay(1);
     }

@@ -1,9 +1,14 @@
+/* Main library */
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>
-#include "JY901.h"
 #include "timers.h"
+
+/* Communication library */
 #include <Wire.h>
+
+/* Device library */
+#include "JY901.h"
 
 SemaphoreHandle_t xSerialSemaphore;
 
@@ -19,10 +24,11 @@ struct IMU {
     float accZ = 0;
 };
 
-IMU carAcc;
+struct IMU carAcc;
 
 void setup() {
     Serial.begin(115200);
+    imuSerial.begin(9600);
 
     if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
         xSemaphoreGive((xSerialSemaphore));
@@ -34,13 +40,13 @@ void setup() {
 void loop() {}
 
 void TaskIMU(void *pvParameters) {
-    imuSerial.begin(115200);
 
     for(;;) {
         if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
-            while(imuSerial.available()) {
+            while(imuSerial.available() > 0) {
                 JY901.CopeSerialData(imuSerial.read());
             }
+            xSemaphoreGive(xSerialSemaphore);
         }
 
         carAcc.accX = (float)JY901.stcAcc.a[0] / 32768 * 16;
@@ -54,7 +60,12 @@ void TaskIMU(void *pvParameters) {
         Serial.print(" ");
         Serial.println(carAcc.accZ);
 
-        xSemaphoreGive(xSerialSemaphore);
+
+        Serial.print("Gyro:");
+        Serial.print((float)JY901.stcGyro.w[0] / 32768 * 2000); Serial.print(" ");
+        Serial.print((float)JY901.stcGyro.w[1] / 32768 * 2000); Serial.print(" ");
+        Serial.println((float)JY901.stcGyro.w[2] / 32768 * 2000);
+
 
         vTaskDelay(1);
 
@@ -144,3 +155,9 @@ void TaskIMU(void *pvParameters) {
         // Serial.println("");
     }
 }
+
+
+
+
+#include "Arduino.h"
+

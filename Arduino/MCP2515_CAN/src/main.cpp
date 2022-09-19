@@ -1,44 +1,44 @@
+/* Main library */
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
 #include "timers.h"
+#include <semphr.h>
+
+/* Communication library */
 #include <SPI.h>
+
+/* Sensor library */
 #include <mcp2515.h>
 
-/*
-        Task setting
-*/
+SemaphoreHandle_t xSerialSemaphore;
+
+/* Task setting */
 void TaskCANSend(void *pvParameters);
 // void TaskCANReceive(void *pvParameters);
 
-/*
-        Timer interrupt setting
-*/
-// TimerHandle_t xMSec;
-
-// void xCANSendCallback(TimerHandle_t xTime);
-
-/*
-        CAN setting
-*/
+/* CAN setting */
 #define chipSelect 53
 
+/* Struct init */
 struct can_frame canMsg1;
 
+/* Class init */
 MCP2515 mcp2515(chipSelect);
 
 void setup() {
     Serial.begin(115200);
     Serial.println("Starting up");
 
+    if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL) {
+        xSemaphoreGive((xSerialSemaphore));
+    }
+
     /* Task setting */
     xTaskCreate(TaskCANSend, "CANSend", 128, NULL, 1, NULL);
     // xTaskCreate(TaskCANReceive, "CANSend", 128, NULL, 1, NULL);
 
-    /* Timer Interrupt setting */
-    // xMSec = xTimerCreate("CANSend", pdMS_TO_TICKS(100), pdTRUE, (void *)0,
-    // xCANSendCallback); xTimerStart(xMSec, 0);
-
     mcp2515.reset();
+    // mcp2515.setBitrate(CAN_100KBPS);
     mcp2515.setBitrate(CAN_125KBPS);
     mcp2515.setNormalMode();
 
@@ -63,7 +63,11 @@ void TaskCANSend(void *pvParameters) {
 
     for(;;) {
         Serial.println("Sending CAN message...");
-        mcp2515.sendMessage(&canMsg1);
+
+        if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
+            mcp2515.sendMessage(&canMsg1);
+        }
+
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

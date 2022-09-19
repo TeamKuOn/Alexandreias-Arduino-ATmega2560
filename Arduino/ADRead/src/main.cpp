@@ -1,7 +1,8 @@
+/* Main library */
 #include "Arduino.h"
 #include <Arduino_FreeRTOS.h>
-#include <semphr.h>
 #include "timers.h"
+#include <semphr.h>
 
 SemaphoreHandle_t xSerialSemaphore;
 

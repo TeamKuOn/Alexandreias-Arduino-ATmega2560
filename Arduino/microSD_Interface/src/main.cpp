@@ -14,9 +14,9 @@ const int chipSelect = 53;
 
 #define Finename "log.txt"
 
-File myFile;
-
 SemaphoreHandle_t xSerialSemaphore;
+
+File myFile;
 
 void TaskWriteSD(void *pvParameters);
 
@@ -44,7 +44,7 @@ void setup() {
     if((xSerialSemaphore = xSemaphoreCreateMutex()) != NULL)
         xSemaphoreGive((xSerialSemaphore));
 
-    xTaskCreate(TaskWriteSD, "TaskWriteSD", 256, NULL, 1, NULL);
+    xTaskCreate(TaskWriteSD, "TaskWriteSD", 1024, NULL, 1, NULL);
 
     Serial.println("Start");
 }
@@ -52,7 +52,7 @@ void setup() {
 void loop() {}
 
 void TaskWriteSD(void *pvParameters) {
-    File myFile;
+
     myFile = SD.open("log.txt");
 
     String dataString = "";

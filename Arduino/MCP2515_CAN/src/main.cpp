@@ -23,6 +23,7 @@ void TaskCANSend(void *pvParameters);
 
 /* Struct init */
 struct can_frame canMsg1;
+struct can_frame canMsg2;
 
 /* Class init */
 MCP2515 mcp2515(chipSelect);
@@ -36,11 +37,10 @@ void setup() {
     }
 
     /* Task setting */
-    xTaskCreate(TaskCANSend, "CANSend", 1000, NULL, 1, NULL);
+    xTaskCreate(TaskCANSend, "CANSend", 2048, NULL, 1, NULL);
     // xTaskCreate(TaskCANReceive, "CANSend", 128, NULL, 1, NULL);
 
     mcp2515.reset();
-    // mcp2515.setBitrate(CAN_100KBPS);
     mcp2515.setBitrate(CAN_125KBPS);
     // mcp2515.setBitrate(CAN_500KBPS);
     mcp2515.setNormalMode();
@@ -65,17 +65,30 @@ void TaskCANSend(void *pvParameters) {
     canMsg1.can_id = 0x0F6;
     canMsg1.can_dlc = 8;
 
+    canMsg2.can_id = 0x0F7;
+    canMsg2.can_dlc = 8;
+
     for(;;) {
-        double data = 135.355414; // -> 0x40 0x5F 0x85 0x1F 0x9F 0x01 0x00 0x00
-
-        // Serial.println("Sending CAN message...");
-        // for(int i=0; i < canMsg1.can_dlc; i++)
-        //     Serial.print(canMsg1.data[i], HEX);
-        // Serial.println("");
-
         if(xSemaphoreTake(xSerialSemaphore, (TickType_t)10) == pdTRUE) {
-            double2Bytes(data, canMsg1.data);
+            double data1 = 135.355414; // -> 0x40 0x5F 0x85 0x1F 0x9F 0x01 0x00 0x00
+            Serial.println(data1);
+            double2Bytes(data1, canMsg1.data);
+
+            double data2 = 33.665608; // -> 0x40 0x5F 0x85 0x1F 0x9F 0x01 0x00 0x00
+            Serial.println(data1);
+            double2Bytes(data2, canMsg2.data);
+
+            // Serial.println("Sending CAN message...");
+            for(int i = 0; i < canMsg1.can_dlc; i++)
+                Serial.print(canMsg1.data[i], HEX);
+            Serial.println("");
+
+            for(int i = 0; i < canMsg2.can_dlc; i++)
+                Serial.print(canMsg2.data[i], HEX);
+            Serial.println("");
+
             mcp2515.sendMessage(&canMsg1);
+            mcp2515.sendMessage(&canMsg2);
 
             xSemaphoreGive(xSerialSemaphore);
         }

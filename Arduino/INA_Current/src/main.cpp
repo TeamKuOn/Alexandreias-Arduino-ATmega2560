@@ -17,8 +17,7 @@ SemaphoreHandle_t xSerialSemaphore;
 void TaskINA226(void *pvParameters);
 
 /* INA226 setting */
-const uint16_t ina226calib =
-    INA226_asukiaaa::calcCalibByResistorMilliOhm(2);  // Max 5120 milli ohm
+const uint16_t ina226calib = INA226_asukiaaa::calcCalibByResistorMilliOhm(2);  // Max 5120 milli ohm
 
 // const uint16_t ina226calib =
 // INA226_asukiaaa::calcCalibByResistorMicroOhm(2000);
@@ -32,7 +31,7 @@ struct INA226Data {
     int16_t power = 0;
 };
 
-INA226Data batteryUnit;
+struct INA226Data batteryUnit;
 
 void setup() {
     Serial.begin(115200);

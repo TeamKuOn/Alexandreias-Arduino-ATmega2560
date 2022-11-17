@@ -8,9 +8,10 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/include",
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/src",
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/.pio/libdeps/megaatmega2560/FreeRTOS/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/include",
+                "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/.pio/libdeps/megaatmega2560/TinyGPSPlus/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/.pio/libdeps/megaatmega2560/FreeRTOS/src",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/variants/mega",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
@@ -23,9 +24,10 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/include",
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/src",
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/.pio/libdeps/megaatmega2560/FreeRTOS/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/include",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/.pio/libdeps/megaatmega2560/TinyGPSPlus/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/NEO-7M_GPS/.pio/libdeps/megaatmega2560/FreeRTOS/src",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/variants/mega",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",

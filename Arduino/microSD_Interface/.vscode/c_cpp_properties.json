@@ -8,14 +8,15 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/include",
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/src",
-                "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/.pio/libdeps/megaatmega2560/FreeRTOS/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/include",
+                "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/.pio/libdeps/megaatmega2560/SD/src",
+                "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/.pio/libdeps/megaatmega2560/FreeRTOS/src",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/cores/arduino",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/variants/mega",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
                 "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                 ""
@@ -23,14 +24,15 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/include",
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/src",
-                    "/home/wasou/Kuon/Alexandreias/Arduino/FreeRTOS_onArduino/.pio/libdeps/megaatmega2560/FreeRTOS/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/include",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/.pio/libdeps/megaatmega2560/SD/src",
+                    "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/home/wasou/Kuon/Alexandreias/Arduino/microSD_Interface/.pio/libdeps/megaatmega2560/FreeRTOS/src",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/cores/arduino",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/variants/mega",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
                     "/home/wasou/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
                     ""
